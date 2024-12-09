@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import {Button} from "@mui/material";
+import AdfScannerIcon from '@mui/icons-material/AdfScanner';
 
 export default function Home() {
 
@@ -15,20 +19,60 @@ export default function Home() {
       }
     }
     buscarUsuario();
-  }, [])
+  }, []);
+
+  const removerPessoa=async(id)=>{
+    try{
+      await fetch('http://localhost:3000/usuarios/' + id,{
+        method: 'DELETE'
+      });
+    }catch{
+      alert("opps lascou!!!")
+    }
+  };
+    const exportarPDF=()=>{
+      const doc=new jsPDF();
+
+      const tabela= usuarios.map(usuario=>[
+        usuario.id,
+        usuario.nome,
+        usuario.email
+      ]);
+
+      doc.text("Lista de Usuários", 10,10);
+
+      doc.autoTable({
+        head:[["ID","Nome", "E-Mail"]],
+        body: tabela
+      });
+
+      doc.save("alunosIFMS");
+    }
+    
 
   return (
+    <div>
+      <Button variant="container" onClick={()=> exportarPDF()}> <AdfScannerIcon/>Gerar PDF </Button>
     <table>
+      <thead>
       <tr>
-        <td>Nome</td>
-        <td>E-mail</td>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Ações</th>
       </tr>
-      {usuarios.map((usuario) =>
+      </thead>
+      <tbody>
+      {usuarios.map((usuario) =>(
         <tr key={usuario.id}>
           <td>{usuario.nome}</td>
           <td>{usuario.email}</td>
+          <td>
+            <button onClick={()=> removerPessoa(usuario.id)}> X </button>
+            </td>
         </tr>
-      )}
+      ))}
+      </tbody>
     </table>
+    </div>
   );
 }
